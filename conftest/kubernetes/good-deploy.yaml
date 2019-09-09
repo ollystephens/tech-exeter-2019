@@ -1,0 +1,61 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tokeniser
+  namespace: wb-pipe
+  labels:
+    app: tokeniser
+    product: engine
+spec:
+  ports:
+  - name: http-admin
+    port: 8075
+    targetPort: 8075
+    protocol: TCP
+  selector:
+    app: tokeniser
+    product: engine
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: tokeniser
+  namespace: wb-pipe
+  labels:
+    app.kubernetes.io/name: tokeniser
+    app.kubernetes.io/instance: primary-tokeniser
+    app.kubernetes.io/version: 1.0.0
+    app.kubernetes.io/component: nlp-function
+    app.kubernetes.io/part-of: nlp-pipeline
+    app.kubernetes.io/managed-by: platform
+spec:
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        prometheus.io/port: "8075"
+        prometheus.io/scrape: "true"
+      labels:
+        app: tokeniser
+        product: engine
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+      - name: service
+        image: gcr.io/adarga/tokeniser:1.0.0
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http-admin
+          containerPort: 8075
+        livenessProbe:
+          httpGet:
+            path: /healthcheck
+            port: http-admin
+          initialDelaySeconds: 200
+          periodSeconds: 10
+        resources:
+          requests:
+            cpu: 250m
+            memory: 5Gi

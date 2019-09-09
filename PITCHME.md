@@ -1,77 +1,190 @@
-# Let's Get Started
+## Policy as Code
+
+### Why you should, how you can
+
+Olly Stephens, Tech Exeter 2019
 
 ---
 
-## Add Some Slide Candy
+@snap[north-west span-50]
+### Agenda
 
-![IMAGE](assets/img/presentation.png)
-
----?color=linear-gradient(180deg, white 75%, black 25%)
-@title[Customize Slide Layout]
-
-@snap[west span-50]
-## Customize the Layout
+- Scene setting
+- A quick introduction to [Open Policy Agent](https://www.openpolicyagent.org/)
+- OPA at run time examples
+- Shift-left testing
+- OPA at build time examples
 @snapend
 
-@snap[east span-50]
-![IMAGE](assets/img/presentation.png)
-@snapend
+@snap[north-east span-50]
+### About Me
 
-@snap[south span-100 text-white]
-Snap Layouts let you create custom slide designs directly within your markdown.
-@snapend
-
----?color=linear-gradient(90deg, #5384AD 65%, white 35%)
-@title[Add A Little Imagination]
-
-@snap[north-west h4-white]
-#### And start presenting...
-@snapend
-
-@snap[west span-55]
-@ul[list-spaced-bullets text-white text-09]
-- You will be amazed
-- What you can achieve
-- *With a little imagination...*
-- And **GitPitch Markdown**
-@ulend
-@snapend
-
-@snap[east span-45]
-@img[shadow](assets/img/conference.png)
+- Architect; Technologist; Gopher
+- Head of Platform Engineering at Adarga Ltd
+- Self-confessed giant shoulder standerer
+- _(today's thanks go to Gareth Rushgrove)_
 @snapend
 
 ---
 
-@snap[north-east span-100 text-pink text-06]
-Let your code do the talking!
+## Congratulations
+
+You've worked really hard and you now have a rock solid [Infrastructure as Code](https://en.wikipedia.org/wiki/Infrastructure_as_code) setup.
+No more snowflakes; no more point-and-click configuration.
+You rely on [Terraform](https://www.terraform.io/) and
+[Kubernetes](https://kubernetes.io/) manifests to build your entire tech stack.
+It's done declaratively - you specify what it should look like and the tooling makes it happen. Life is good.
+
+---
+
+## And - somewhere - we have some policies written down
+
+@snap[west span-40]
+
+- Don't do stupid things
+- Follow our in-house conventions
+
 @snapend
 
-```sql zoom-18
-CREATE TABLE "topic" (
-    "id" serial NOT NULL PRIMARY KEY,
-    "forum_id" integer NOT NULL,
-    "subject" varchar(255) NOT NULL
-);
-ALTER TABLE "topic"
-ADD CONSTRAINT forum_id
-FOREIGN KEY ("forum_id")
-REFERENCES "forum" ("id");
+---
+
+## But where are the guard rails?
+
+---
+
+# Open Policy Agent
+
+A policy enforcement engine for configuration
+
+---
+
+![OPA Benefits](assets/img/opa-benefits.svg)
+
+---
+
+## Kubernetes Example
+
+@fa[quote-left] Developers are not allowed to create public facing services in the DEV kube cluster @fa[quote-right]
+
+---
+
+@snap[north span-100]
+@code[ruby](gatekeeper/only-internal-lbs.rego)
+@snapend
+
+@snap[south span-100]
+@[3,6,7, zoom-10](If we are creating or updating a Service.)
+@[8,     zoom-10](And it's type is LoadBalancer.)
+@[9,10,  zoom-10](And it doesn't have this annotation.)
+@[5,11,  zoom-10](Then deny the request.)
+@snapend
+
+---
+
+## Kubernetes Example
+
+@fa[quote-left] Ingress names must be whitelisted @fa[quote-right]
+
+---
+
+@snap[north span-100]
+@code[ruby](gatekeeper/whitelist-ingress.rego)
+@snapend
+
+@snap[south span-100]
+@[10,11, zoom-100](Is the host name whitelisted?)
+@[16,17, zoom-100](Whitelisted names are attached to namespace)
+
+---
+
+# Shift Left
+
+Shift-left testing is an approach to software testing and system testing in which testing is performed earlier in the lifecycle (i.e., moved left on the project timeline). It is the first half of the maxim "Test early and often."
+[Wikipedia](https://en.wikipedia.org/wiki/Shift-left_testing)
+
+---
+
+@snap[west span-25 text-08]
+@box[bg-gold](Local development)
+@snapend
+
+@snap[south-west span-25 text-08]
+@fa[rocket]Fast
+@snapend
+
+@snap[midpoint span-25 text-08]
+@box[bg-gold](Continuous integration)
+@snapend
+
+@snap[east span-25 text-08]
+@box[bg-gold](Cluster)
+@snapend
+
+---
+
+# conftest
+
+Write tests against structured configuration data using the Open Policy Agent Rego query language.
+
+---
+
+### Can still check our kubernetes manifests
+
+@code[ruby](conftest/kubernetes/policy/run-as-non-root.rego)
+
+---
+
+### and...
+
+@code[ruby](conftest/kubernetes/policy/must-have-labels.rego)
+
+---
+
+### but this time, we can do it before we push
+
+#### or as part of a continuous deployment trigger
+
+```bash
+% conftest test ./bad-deploy.yaml && echo OK
+FAIL - ./bad-deploy.yaml - Deployment 'tokenizer' must include standard labels
+FAIL - ./bad-deploy.yaml - Containers in deployment 'tokenizer' must not run as root
+% conftest test ./good-deploy.yaml && echo OK
+OK
 ```
 
-@snap[south span-100 text-gray text-08]
-@[1-5](You can step-and-ZOOM into fenced-code blocks, source files, and Github GIST.)
-@[6,7, zoom-13](Using GitPitch live code presenting with optional annotations.)
-@[8-9, zoom-12](This means no more switching between your slide deck and IDE on stage.)
-@snapend
+---
 
+### Similarly with Terraform
 
----?image=assets/img/presenter.jpg
+@code[ruby](conftest/terraform/policy/cost-codes.rego)
 
-@snap[north span-100 h2-white]
-## Now It's Your Turn
-@snapend
+---
 
-@snap[south span-100 text-06]
-[Click here to jump straight into the interactive feature guides in the GitPitch Docs @fa[external-link]](https://gitpitch.com/docs/getting-started/tutorial/)
-@snapend
+#### ...with a little hoop jumping
+
+```bash
+% terraform plan -out tfplan
+% terraform show -json tfplan | conftest test -
+FAIL - aws_internet_gateway.my-vpc-igw does not have cost_code tag
+FAIL - aws_vpc.my-vpc does not have cost_code tag
+```
+
+---
+
+#### Protect blast radius when auto-deploying
+
+@code[ruby zoom-05](conftest/terraform/policy/blast-radius-core.rego)
+
+---
+
+### Moving back from CD to CI
+
+Snyk example
+
+@code[ruby zoom-05](conftest/snyk/policy/waivers.rego)
+
+Registry example
+
+---
+
+### Testing policies

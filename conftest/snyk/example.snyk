@@ -1,0 +1,45 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.13.5
+# ignores vulnerabilities until expiry date; change duration by modifying expiry date
+ignore:
+  SNYK-JAVA-CHQOSLOGBACK-173711:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:37:38.999Z
+  SNYK-JAVA-CHQOSLOGBACK-31407:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:01.367Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-450207:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:17.279Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-31573:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:37.265Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-31507:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:37.265Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-32043:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:37.265Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-32111:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:37.265Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-32044:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:37.265Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-174736:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:37.265Z
+  SNYK-JAVA-COMFASTERXMLJACKSONCORE-72884:
+    - '*':
+        reason: testing snyk policy
+        expires: 2019-08-22T09:38:37.265Z
+patch: {}
