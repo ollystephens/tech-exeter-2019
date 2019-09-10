@@ -12,7 +12,7 @@ theme-headline   : [ "Raleway", "#535366", "none" ]
 theme-byline     : [ "Raleway", "#89A7CC", "none" ]
 theme-text       : [ "Ubuntu", "#23232B", "none" ]
 theme-links      : [ "#535366", "#89A7CC" ]
-theme-code       : [ "Source Code Pro" ]
+theme-code       : [ "Fira Code" ]
 theme-controls   : [ "#BCBCBC" ]
 theme-margins    : [ "0", "15px" ]
 

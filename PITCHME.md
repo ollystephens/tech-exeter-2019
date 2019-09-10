@@ -37,18 +37,16 @@ It's done declaratively - you specify what it should look like and the tooling m
 
 ---
 
-## And - somewhere - we have some policies written down
+### And - somewhere - we have some policies written down
 
-@snap[west span-40]
-
-- Don't do stupid things
-- Follow our in-house conventions
-
-@snapend
+![Policy Jails](assets/img/policy-jail.png)
 
 ---
 
 ## But where are the guard rails?
+
+- Don't do stupid things
+- Follow our in-house conventions
 
 ---
 
@@ -62,9 +60,29 @@ A policy enforcement engine for configuration
 
 ---
 
+### The REGO Language
+
+@snap[zoom-07]
+OPA is purpose built for reasoning about information represented in structured documents. The data that your service and its users publish can be inspected and transformed using OPA’s native query language Rego.
+
+Rego was inspired by Datalog, which is a well understood, decades old query language. Rego extends Datalog to support structured document models such as JSON.
+
+Rego focuses on providing powerful support for referencing nested documents and ensuring that queries are correct and unambiguous.
+
+Rego is declarative so policy authors can focus on what queries should return rather than how queries should be executed. These queries are simpler and more concise than the equivalent in an imperative language.
+
+Like other applications which support declarative query languages, OPA is able to optimize queries to improve performance.
+@snapend
+
+---
+
 ## Kubernetes Example
 
 @fa[quote-left] Developers are not allowed to create public facing services in the DEV kube cluster @fa[quote-right]
+
+---
+
+![Kubernetes admission control](assets/img/kube-admission.png)
 
 ---
 
@@ -104,21 +122,9 @@ Shift-left testing is an approach to software testing and system testing in whic
 
 ---
 
-@snap[west span-25 text-08]
-@box[bg-gold](Local development)
-@snapend
+## Let's shift left ever so slightly...
 
-@snap[south-west span-25 text-08]
-@fa[rocket]Fast
-@snapend
-
-@snap[midpoint span-25 text-08]
-@box[bg-gold](Continuous integration)
-@snapend
-
-@snap[east span-25 text-08]
-@box[bg-gold](Cluster)
-@snapend
+![CI/CD pipeline](assets/img/cicd-pipeline/cicd-policy-deploy.png)
 
 ---
 
@@ -140,23 +146,42 @@ Write tests against structured configuration data using the Open Policy Agent Re
 
 ---
 
-### but this time, we can do it before we push
+@snap[north span-100]
 
-#### or as part of a continuous deployment trigger
+### but this time, we do it before we push
 
+#### (as part of a test for a continuous deployment trigger)
+
+@snapend
+
+@snap[zoom-08 code-max]
 ```bash
 % conftest test ./bad-deploy.yaml && echo OK
 FAIL - ./bad-deploy.yaml - Deployment 'tokenizer' must include standard labels
 FAIL - ./bad-deploy.yaml - Containers in deployment 'tokenizer' must not run as root
+
 % conftest test ./good-deploy.yaml && echo OK
 OK
 ```
+@snapend
 
 ---
 
-### Similarly with Terraform
+## Terraform Example
 
+@fa[quote-left] All AWS assets (that support it) must have a `cost_code` tag set. @fa[quote-right]
+
+---
+
+@snap[north span-100]
 @code[ruby](conftest/terraform/policy/cost-codes.rego)
+@snapend
+
+@snap[south span-100]
+@[13,         zoom-10](There exists some value of i)
+@[3-10,15-16, zoom-10](that is an instance of a resource that supports tags)
+@[17,         zoom-10](that does not have cost_code in the set of tags after apply)
+@snapend
 
 ---
 
@@ -171,20 +196,106 @@ FAIL - aws_vpc.my-vpc does not have cost_code tag
 
 ---
 
-#### Protect blast radius when auto-deploying
+## More Terraform
 
-@code[ruby zoom-05](conftest/terraform/policy/blast-radius-core.rego)
+@fa[quote-left] Control blast radius to protect against catastrophic deployments @fa[quote-right]
+
+---
+
+@code[ruby code-max zoom-06](conftest/terraform/policy/blast-radius-core.rego)
 
 ---
 
 ### Moving back from CD to CI
 
-Snyk example
-
-@code[ruby zoom-05](conftest/snyk/policy/waivers.rego)
-
-Registry example
+![CI/CD pipeline](assets/img/cicd-pipeline/cicd-policy-everywhere.png)
 
 ---
 
-### Testing policies
+## Snyk (vulnerability scanning)
+
+@fa[quote-left] All high severity vulnerabilities left in code must be formally waived by CISO @fa[quote-right]
+
+---
+
+@snap[north span-85]
+Snyk policy file
+@code[yaml zoom-05 code-max](conftest/snyk/example.snyk?lines=1-12)
+--
+Synk policy file policy
+@code[ruby zoom-05 code-max](conftest/snyk/policy/waivers.rego)
+@snapend
+
+---
+
+@snap[north span-100]
+## Registry example
+@snapend
+
+@snap[zoom-08]
+```bash
+% ls
+waivers.snyk
+
+% docker login xxx.azurecr.io
+% conftest pull xxx.azurecr.io/policies/snyk:latest
+% ls
+waivers.snyk   policy/
+
+% conftest test waivers.snyk
+FAIL - waivers.snyk - Vulnerabilities SNYK-JAVA-CHQOSLOGBACK-31407,
+SNYK-JAVA-COMFASTERXMLJACKSONCORE-174736, SNYK-JAVA-COMFASTERXMLJACKSONCORE-31507,
+SNYK-JAVA-COMFASTERXMLJACKSONCORE-31573, SNYK-JAVA-COMFASTERXMLJACKSONCORE-72884,
+SNYK-JAVA-COMFASTERXMLJACKSONCORE-32043, SNYK-JAVA-COMFASTERXMLJACKSONCORE-32044,
+SNYK-JAVA-COMFASTERXMLJACKSONCORE-32111 are not in the allowed waiver list
+```
+@snapend
+
+---
+
+@snap[north span-100]
+### Leveraging the ecosystem
+@snapend
+
+@snap[south span-100]
+![ORAS](assets/img/oras-bundles.png)
+@snapend
+
+---
+
+## Testing policies
+
+@fa[quote-left] All code repositories should contain unit tests. @fa[quote-right]
+
+---
+
+@code[ruby zoom-08](conftest/testing/policy/run-as-non-root-tests.rego)
+
+---
+
+@snap[north span-100]
+### Using OPA's built-in test harness
+@snapend
+
+@snap[zoom-08]
+
+```bash
+% opa test --verbose policy/run-as-non-root.rego policy/run-as-non-root-tests.rego
+data.main.test_deployment_without_security_context: PASS (2.2231ms)
+data.main.test_deployment_with_security_context: PASS (450.375µs)
+
+PASS: 2/2
+```
+
+@snapend
+
+---
+
+### Summing Up
+
+- Policies should be coded, not scribed
+   - CI/CD pipelines need conformance checks
+- `OPA` is a powerful and appropriate framework for policies
+- `conftest` allows us to leverage OPA in the places we need
+   - supports `YAML`, `JSON`, `INI`, `TOML`, `HCL`, `CUE`, `Dockerfile`
+- shift left - check early, check often
