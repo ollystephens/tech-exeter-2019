@@ -62,17 +62,15 @@ A policy enforcement engine for configuration
 
 ### The REGO Language
 
-@snap[zoom-07]
-OPA is purpose built for reasoning about information represented in structured documents. The data that your service and its users publish can be inspected and transformed using OPA’s native query language Rego.
+@ul[zoom-07]
+- OPA is purpose built for reasoning about information represented in structured documents. The data that your service and its users publish can be inspected and transformed using OPA’s native query language Rego.
 
-Rego was inspired by Datalog, which is a well understood, decades old query language. Rego extends Datalog to support structured document models such as JSON.
+- Rego was inspired by Datalog, which is a well understood, decades old query language. Rego extends Datalog to support structured document models such as JSON.
 
-Rego focuses on providing powerful support for referencing nested documents and ensuring that queries are correct and unambiguous.
+- Rego focuses on providing powerful support for referencing nested documents and ensuring that queries are correct and unambiguous.
 
-Rego is declarative so policy authors can focus on what queries should return rather than how queries should be executed. These queries are simpler and more concise than the equivalent in an imperative language.
-
-Like other applications which support declarative query languages, OPA is able to optimize queries to improve performance.
-@snapend
+- Rego is declarative so policy authors can focus on what queries should return rather than how queries should be executed. These queries are simpler and more concise than the equivalent in an imperative language.
+@ulend
 
 ---
 
@@ -134,6 +132,22 @@ Write tests against structured configuration data using the Open Policy Agent Re
 
 ---
 
+### conftest
+
+@ul[zoom-07]
+- conftest allows you to write policies using Open Policy Agent/rego and apply them to one or more configuration files.
+- As of today conftest supports:
+  - YAML
+  - JSON
+  - INI
+  - TOML
+  - HCL
+  - CUE
+  - Dockerfile
+@ulend
+
+---
+
 ### Can still check our kubernetes manifests
 
 @code[ruby](conftest/kubernetes/policy/run-as-non-root.rego)
@@ -174,7 +188,7 @@ OK
 ---
 
 @snap[north span-100]
-@code[ruby](conftest/terraform/policy/cost-codes.rego)
+@code[ruby zoom-08](conftest/terraform/policy/cost-codes.rego)
 @snapend
 
 @snap[south span-100]
@@ -212,7 +226,8 @@ FAIL - aws_vpc.my-vpc does not have cost_code tag
 
 ---
 
-## Snyk (vulnerability scanning)
+## Snyk
+### (vulnerability scanning)
 
 @fa[quote-left] All high severity vulnerabilities left in code must be formally waived by CISO @fa[quote-right]
 
@@ -228,9 +243,45 @@ Synk policy file policy
 
 ---
 
-@snap[north span-100]
-## Registry example
+## Service Config
+### (grafana.ini example)
+
+---
+
+@snap[north span-85]
+`grafana.ini`
+@code[ini zoom-05 code-max](conftest/grafana/grafana.ini)
+--
+Policy file
+@code[ruby zoom-05 code-max](conftest/grafana/policy/grafana.rego)
 @snapend
+
+---
+
+```bash
+% conftest test grafana.ini
+FAIL - grafana.ini - Alerting should turned on
+FAIL - grafana.ini - Grafana port should be 3443
+FAIL - grafana.ini - Grafana should use default https
+FAIL - grafana.ini - Users should verify their e-mail address
+```
+
+---
+
+## Registry of policies
+### (division of responsibility)
+
+---
+
+@snap[north span-100]
+### Leveraging the ecosystem
+@snapend
+
+@snap[south span-100]
+![ORAS](assets/img/oras-bundles.png)
+@snapend
+
+---
 
 @snap[zoom-08]
 ```bash
@@ -253,19 +304,11 @@ SNYK-JAVA-COMFASTERXMLJACKSONCORE-32111 are not in the allowed waiver list
 
 ---
 
-@snap[north span-100]
-### Leveraging the ecosystem
-@snapend
-
-@snap[south span-100]
-![ORAS](assets/img/oras-bundles.png)
-@snapend
-
----
-
 ## Testing policies
 
 @fa[quote-left] All code repositories should contain unit tests. @fa[quote-right]
+
+@fa[quote-left] Only code built by official CI/CD processes can be used in production. @fa[quote-right]
 
 ---
 
@@ -295,7 +338,17 @@ PASS: 2/2
 
 - Policies should be coded, not scribed
    - CI/CD pipelines need conformance checks
-- `OPA` is a powerful and appropriate framework for policies
+- `OPA` is a powerful and appropriate framework
+   - _(side note: we should use it in our services)_
 - `conftest` allows us to leverage OPA in the places we need
-   - supports `YAML`, `JSON`, `INI`, `TOML`, `HCL`, `CUE`, `Dockerfile`
-- shift left - check early, check often
+   - *shift left - check early, check often*
+- Registry support allows us to clearly deliniate responsibilities
+- Ecosystem is immature, but worth investment
+
+---
+
+## Questions?
+
+@snap[zoom-04]
+@fa[email] olly@marste.net
+@snapend
