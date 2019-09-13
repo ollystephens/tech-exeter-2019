@@ -62,7 +62,7 @@ A policy enforcement engine for configuration
 
 ### The REGO Language
 
-@ul[zoom-07]
+@ul[zoom-06]
 - OPA is purpose built for reasoning about information represented in structured documents. The data that your service and its users publish can be inspected and transformed using OPA’s native query language Rego.
 
 - Rego was inspired by Datalog, which is a well understood, decades old query language. Rego extends Datalog to support structured document models such as JSON.
@@ -85,7 +85,7 @@ A policy enforcement engine for configuration
 ---
 
 @snap[north span-100]
-@code[ruby](gatekeeper/only-internal-lbs.rego)
+@code[ruby code-max zoom-06](gatekeeper/only-internal-lbs.rego)
 @snapend
 
 @snap[south span-100]
@@ -103,13 +103,14 @@ A policy enforcement engine for configuration
 
 ---
 
-@snap[north span-100]
-@code[ruby](gatekeeper/whitelist-ingress.rego)
+@snap[north]
+@code[ruby code-max zoom-06](gatekeeper/whitelist-ingress.rego)
 @snapend
 
-@snap[south span-100]
-@[10,11, zoom-100](Is the host name whitelisted?)
-@[16,17, zoom-100](Whitelisted names are attached to namespace)
+@snap[south]
+@[10,11, zoom-10](Is the host name whitelisted?)
+@[16,17, zoom-10](Whitelisted names are attached to namespace)
+@snapend
 
 ---
 
@@ -134,7 +135,7 @@ Write tests against structured configuration data using the Open Policy Agent Re
 
 ### conftest
 
-@ul[zoom-07]
+@ul[zoom-06]
 - conftest allows you to write policies using Open Policy Agent/rego and apply them to one or more configuration files.
 - As of today conftest supports:
   - YAML
@@ -150,13 +151,13 @@ Write tests against structured configuration data using the Open Policy Agent Re
 
 ### Can still check our kubernetes manifests
 
-@code[ruby](conftest/kubernetes/policy/run-as-non-root.rego)
+@code[ruby code-max zoom-06](conftest/kubernetes/policy/run-as-non-root.rego)
 
 ---
 
 ### and...
 
-@code[ruby](conftest/kubernetes/policy/must-have-labels.rego)
+@code[ruby code-max zoom-06](conftest/kubernetes/policy/must-have-labels.rego)
 
 ---
 
@@ -168,7 +169,7 @@ Write tests against structured configuration data using the Open Policy Agent Re
 
 @snapend
 
-@snap[zoom-08 code-max]
+@snap[zoom-06 code-max]
 ```bash
 % conftest test ./bad-deploy.yaml && echo OK
 FAIL - ./bad-deploy.yaml - Deployment 'tokenizer' must include standard labels
@@ -188,7 +189,7 @@ OK
 ---
 
 @snap[north span-100]
-@code[ruby zoom-08](conftest/terraform/policy/cost-codes.rego)
+@code[ruby code-max zoom-06](conftest/terraform/policy/cost-codes.rego)
 @snapend
 
 @snap[south span-100]
@@ -283,7 +284,7 @@ FAIL - grafana.ini - Users should verify their e-mail address
 
 ---
 
-@snap[zoom-08]
+@snap[zoom-06]
 ```bash
 % ls
 waivers.snyk
@@ -312,7 +313,7 @@ SNYK-JAVA-COMFASTERXMLJACKSONCORE-32111 are not in the allowed waiver list
 
 ---
 
-@code[ruby zoom-08](conftest/testing/policy/run-as-non-root-tests.rego)
+@code[ruby code-max zoom-06](conftest/testing/policy/run-as-non-root-tests.rego)
 
 ---
 
@@ -320,7 +321,7 @@ SNYK-JAVA-COMFASTERXMLJACKSONCORE-32111 are not in the allowed waiver list
 ### Using OPA's built-in test harness
 @snapend
 
-@snap[zoom-08]
+@snap[zoom-06]
 
 ```bash
 % opa test --verbose policy/run-as-non-root.rego policy/run-as-non-root-tests.rego
@@ -349,6 +350,6 @@ PASS: 2/2
 
 ## Questions?
 
-@snap[zoom-04]
+@snap[zoom-05]
 @fa[email] olly@marste.net
 @snapend
